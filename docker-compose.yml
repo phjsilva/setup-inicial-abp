@@ -1,0 +1,72 @@
+name: greener
+
+services:
+  database:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: greener
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - greener
+
+  backend:
+    build: ./backend
+    init: true
+    env_file: ./backend/.env
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    command: sh -c "npm ci && npm run dev"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:" + process.env.PORT + "/health").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - greener
+
+  frontend:
+    build: ./frontend
+    init: true
+    env_file: ./frontend/.env
+    environment:
+      DEV_HOST: 0.0.0.0
+      DEV_USE_POLLING: 'true'
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: sh -c "npm ci && npm run dev"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - greener
+
+networks:
+  greener:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  frontend_node_modules:
