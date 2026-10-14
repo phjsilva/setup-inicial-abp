@@ -23,20 +23,21 @@ fornecê-las ao restante da aplicação.
 
 ## 2. API REST do GreenER
 
-A implementação atual oferece detalhe de serviço, histórico de coletas e
-estado do monitoramento. As demais operações abaixo são planejadas e não devem
-ser apresentadas como implementadas. A interface atual ainda usa mocks; sua
-integração com estas rotas permanece pendente.
+A implementação atual oferece listagem, detalhe de serviço, histórico de coletas e
+estado do monitoramento. O frontend ainda usa dados simulados; a integração real permanece pendente. As demais operações abaixo são planejadas.
 
 ### 2.1. Operações implementadas
 
 Base local: `http://localhost:3000`. As rotas de negócio usam o prefixo
-`/api/v1`; o recurso atual é `/service`, no singular. Não há aliases em
-`/services` nesta versão.
+`/api/v1`; o frontend usa `/services`. As rotas anteriores em `/service`
+continuam disponíveis para compatibilidade.
 
 | Método | Caminho real | Responsabilidade | Autenticação |
 |---|---|---|---|
 | `GET` | `/health` | Informar que o processo HTTP está disponível. | Não exige. |
+| `GET` | `/api/v1/services` | Listar serviços com filtros opcionais de região e listagem. | Não exige. |
+| `GET` | `/api/v1/services/:externalId` | Entregar detalhe e última coleta. | Não exige. |
+| `GET` | `/api/v1/services/:externalId/collections` | Entregar histórico e totais por período. | Não exige. |
 | `GET` | `/api/v1/service/:externalId` | Entregar identificação, estado, localização e última coleta válida. | Não exige. |
 | `GET` | `/api/v1/service/:externalId/collections` | Entregar pontos agrupados e totais do período. | Não exige. |
 | `GET` | `/api/v1/monitoring/status` | Informar horários, contadores e resultados observados pelo job. | Não exige. |
@@ -44,6 +45,35 @@ Base local: `http://localhost:3000`. As rotas de negócio usam o prefixo
 `externalId` é o identificador da API externa salvo em `servico.external_id`,
 por exemplo `billing-api`; não é o BIGINT interno. O parâmetro aceita de 1 a
 100 caracteres, usando letras, números, ponto, sublinhado e hífen.
+
+#### Lista de serviços
+
+`GET /api/v1/services?regionCode=br-sudeste&active=true` aceita código exato
+da região e `active=true` ou `active=false`. Sem filtros, inclui todas as
+regiões e serviços listados e não listados, independentemente do status.
+Retorna `{ generatedAt, filters: { regionCode, active }, services }`; filtros
+omitidos são `null`. Cada serviço inclui `id`, `name`, `active`, `status`,
+`statusUpdatedAt`, `lastSeenAt`, `location` e `latestCollection`.
+A última coleta pode ser `null` e não determina o status atual.
+Região desconhecida retorna 200 com lista vazia. Filtros inválidos retornam
+400; falhas internas retornam 500. Não recebe corpo JSON. Valores repetidos,
+vazios, objetos ou outros valores de `active` são inválidos. O código regional
+não é aparado: `br-sudeste` e ` br-sudeste` são correspondências distintas.
+
+```http
+GET /api/v1/services?active=false
+Accept: application/json
+```
+
+Exemplo de resposta sem correspondência (200):
+
+```json
+{"generatedAt":"2026-10-14T19:00:10Z","filters":{"regionCode":"desconhecida","active":null},"services":[]}
+```
+
+`GET /api/v1/services?active=0` retorna 400 com `error.message: "Dados inválidos"`.
+A consulta usa `LEFT JOIN LATERAL`, mantém serviços sem coleta e lê o fator
+histórico na coleta, separadamente do fator regional atual.
 
 #### Detalhe e última coleta
 
@@ -125,7 +155,6 @@ implementadas, sem garantia de disponibilidade HTTP na versão atual.
 | Método | Caminho | Responsabilidade |
 |---|---|---|
 | `POST` | `/auth/login` | Validar as credenciais do usuário e emitir um JWT. |
-| `GET` | `/services` | Entregar a lista de serviços e os dados de resumo usados no dashboard. |
 | `GET` | `/rankings` | Consultar a classificação ambiental com critério e período identificados. |
 | `GET` | `/comparisons` | Consultar dados comparáveis de serviços e regiões selecionados. |
 | `GET` | `/regions` | Entregar regiões e os dados ambientais associados. |

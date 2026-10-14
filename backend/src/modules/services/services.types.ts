@@ -1,72 +1,88 @@
 export interface ServiceRow {
-    id: string;
-    external_id: string;
-    nome: string;
-    ativo: boolean;
-    status: string;
-    ultima_vez_visto_em: Date;
-    codigo: string | null;
-    pais: string | null;
-    regiao: string | null;
-    cidade: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    carbon_intensity: number | null;
+  id: string;
+  external_id: string;
+  nome: string;
+  ativo: boolean;
+  status: string;
+  status_atualizado_em: Date;
+  ultima_vez_visto_em: Date;
+  codigo: string | null;
+  pais: string | null;
+  regiao: string | null;
+  cidade: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  carbon_intensity: number | null;
 }
 
 export interface CollectionRow {
-    coletado_em: Date;
-    intervalo_metrica_segundos: number;
-    cpu_percent: number;
-    memory_gb: number;
-    disk_gb: number;
-    network_gb: number;
-    potencia_estimada_w: number;
-    energia_estimada_kwh: number;
-    carbon_intensity: number;
-    co2e_estimado_g: number;
+  coletado_em: Date;
+  intervalo_metrica_segundos: number;
+  cpu_percent: number;
+  memory_gb: number;
+  disk_gb: number;
+  network_gb: number;
+  potencia_estimada_w: number;
+  energia_estimada_kwh: number;
+  carbon_intensity: number;
+  co2e_estimado_g: number;
 }
 
+// O LEFT JOIN mantém o serviço mesmo quando todos os campos da coleta são nulos.
+export type ServiceWithLatestRow = ServiceRow & {
+  [Key in Exclude<keyof CollectionRow, 'carbon_intensity'>]:
+    CollectionRow[Key] | null;
+} & {
+  collection_carbon_intensity: number | null;
+};
+
 export interface LocationDto {
-    regionCode: string;
-    country: string;
-    region: string;
-    city: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    currentCarbonIntensityGco2ePerKwh: number;
+  regionCode: string;
+  country: string;
+  region: string;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  currentCarbonIntensityGco2ePerKwh: number;
 }
 export interface ServiceDto {
-    id: string;
-    name: string;
-    active: boolean;
-    status: string;
-    lastSeenAt: string;
-    location: LocationDto | null;
+  id: string;
+  name: string;
+  active: boolean;
+  status: string;
+  statusUpdatedAt: string;
+  lastSeenAt: string;
+  location: LocationDto | null;
 }
 
 export interface EstimatesDto {
-    powerWatts: number;
-    energyKwh: number;
-    co2eGrams: number;
-    carbonIntensityGco2ePerKwh: number;
+  powerWatts: number;
+  energyKwh: number;
+  co2eGrams: number;
+  carbonIntensityGco2ePerKwh: number;
 }
 
 export interface MetricsDto {
-    cpuPercent: number;
-    memoryGb: number;
-    diskGb: number;
-    networkGb: number;
+  cpuPercent: number;
+  memoryGb: number;
+  diskGb: number;
+  networkGb: number;
 }
 
 export interface LatestCollectionDto {
-    collectedAt: string;
-    collectionIntervalSeconds: number;
-    metrics: MetricsDto;
-    estimates: EstimatesDto;
+  collectedAt: string;
+  collectionIntervalSeconds: number;
+  metrics: MetricsDto;
+  estimates: EstimatesDto;
 }
 
 export interface ServiceOverviewDto {
-    service: ServiceDto;
-    latestCollection: LatestCollectionDto | null;
+  service: ServiceDto;
+  latestCollection: LatestCollectionDto | null;
+}
+
+export interface ServicesListDto {
+  generatedAt: string;
+  filters: { regionCode: string | null; active: boolean | null };
+  services: (ServiceDto & { latestCollection: LatestCollectionDto | null })[];
 }
