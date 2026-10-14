@@ -4,9 +4,9 @@ export interface ServiceLocation {
   regionCode: string;
   country: string;
   region: string;
-  city: string;
-  latitude: number;
-  longitude: number;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface ServiceMetrics {
@@ -21,15 +21,30 @@ export interface ServiceEnvironmental {
   energyKwh: number;
   co2eGrams: number;
   carbonIntensity: number;
-  renewableSharePercent: number;
+  renewableSharePercent: number | null;
 }
 
 export interface ServiceDetail {
+  active?: boolean;
+  statusUpdatedAt?: string;
+  collectedAt?: string;
+  collectionIntervalSeconds?: number;
   id: string;
   name: string;
   status: ServiceStatus;
   lastSeenAt: string;
-  location: ServiceLocation;
+  location: ServiceLocation | null;
+  metrics: ServiceMetrics | null;
+  environmental: ServiceEnvironmental | null;
+}
+
+export interface ServiceSummary {
+  active?: boolean;
+  id: string;
+  name: string;
+  status: ServiceStatus;
+  lastSeenAt: string;
+  location: ServiceLocation | null;
   metrics: ServiceMetrics | null;
   environmental: ServiceEnvironmental | null;
 }

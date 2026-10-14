@@ -1,161 +1,236 @@
-import { useParams } from 'react-router';
+import { useState, type ReactNode } from 'react';
+import { Link, useParams } from 'react-router';
 import { findServiceById } from '@/mocks/services';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ServiceStatus } from '@/types/service';
+import {
+  buildServiceHistory,
+  mockOverview,
+  type Range,
+} from '@/mocks/serviceHistory';
+import { ChartCard } from '@/components/charts/ChartCard';
+import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
+import { ServiceStatusBadge } from '@/components/services/ServiceStatusBadge';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatDateTime, formatNumber } from '@/lib/format';
 
-const statusInfo: Record<ServiceStatus, { label: string; className: string }> = {
-  available: {
-    label: 'Disponível',
-    className: 'bg-emerald-100 text-emerald-800',
-  },
-  metrics_missing: {
-    label: 'Sem métricas',
-    className: 'bg-amber-100 text-amber-800',
-  },
-  unavailable: {
-    label: 'Indisponível',
-    className: 'bg-red-100 text-red-800',
-  },
+const periods: Record<Range, string> = {
+  '1h': 'Última hora',
+  '6h': 'Últimas 6 horas',
+  '24h': 'Últimas 24 horas',
+  '7d': 'Últimos 7 dias',
+  '30d': 'Últimos 30 dias',
 };
-
-function InfoItem({ label, value }: { label: string; value: string }) {
+function InfoItem({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-xl font-semibold">{value}</dd>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm font-semibold tabular-nums">{value}</dd>
     </div>
   );
 }
-
 export function ServiceDetailPage() {
   const { id } = useParams();
-  const service = id ? findServiceById(id) : undefined;
-
-  if (!service) {
-    return (
-      <main className="mx-auto min-h-screen max-w-5xl bg-background p-6">
-        <h1 className="text-2xl font-semibold">Serviço não encontrado</h1>
-        <p className="mt-2 text-muted-foreground">
-          Não existe serviço com o identificador "{id}".
-        </p>
-      </main>
-    );
-  }
-
-  const status = statusInfo[service.status];
-
+  const [range, setRange] = useState<Range>('24h');
+  const mock = id ? findServiceById(id) : undefined;
+  const current = mock ? mockOverview(mock) : null;
+  const history = mock ? buildServiceHistory(mock, range) : null;
+  const error = mock ? null : 'Serviço não encontrado nos dados simulados.';
+  const historyError = null;
+  const service = current?.service;
+  const collection = current?.latestCollection;
+  const metrics = collection?.metrics;
+  const estimates = collection?.estimates;
+  const location = service?.location;
+  const charts = [
+    {
+      title: 'CO₂e por coleta',
+      key: 'co2ePerCollectionGrams',
+      color: '#34d399',
+      unit: 'g CO₂e',
+    },
+    {
+      title: 'Potência estimada',
+      key: 'powerWatts',
+      color: '#60a5fa',
+      unit: 'W',
+    },
+    { title: 'Uso de CPU', key: 'cpuPercent', color: '#a78bfa', unit: '%' },
+    { title: 'Memória em uso', key: 'memoryGb', color: '#fbbf24', unit: 'GB' },
+  ] as const;
   return (
-    <main className="mx-auto min-h-screen max-w-5xl space-y-6 bg-background p-6">
-      <header>
-        <p className="text-sm text-muted-foreground">Detalhamento de serviço</p>
-        <h1 className="text-3xl font-semibold">{service.name}</h1>
-        <p className="font-mono text-sm text-muted-foreground">
-          ID: {service.id}
+    <main className="mx-auto max-w-7xl space-y-4 p-4 sm:p-6">
+      <Link to="/dashboard" className="text-sm text-primary hover:underline">
+        ← Serviços
+      </Link>
+      <p className="text-xs text-amber-300">
+        SIMULADO · curva fictícia integrada pela duração das faixas; amostra de
+        referência de 30 s.
+      </p>
+      {error && (
+        <p role="alert" className="text-destructive">
+          {error}
         </p>
-      </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>Estado do serviço</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <span
-            className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${status.className}`}
-          >
-            {status.label}
-          </span>
-          <p className="text-sm text-muted-foreground">
-            Visto por último em{' '}
-            {new Date(service.lastSeenAt).toLocaleString('pt-BR')}
+      )}
+      {!service ? (
+        !error && <p className="text-muted-foreground">Carregando serviço...</p>
+      ) : (
+        <>
+          <header className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                {service.name}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {service.id} ·{' '}
+                {[location?.city, location?.region, location?.country]
+                  .filter(Boolean)
+                  .join(', ') || 'Localização não informada'}
+              </p>
+            </div>
+            <div
+              aria-label="Período dos gráficos"
+              className="flex rounded-lg border border-border bg-background/60 p-1"
+            >
+              {(Object.keys(periods) as Range[]).map((value) => (
+                <button
+                  key={value}
+                  aria-pressed={range === value}
+                  onClick={() => setRange(value)}
+                  className={`rounded-md px-3 py-1.5 text-xs transition-colors ${range === value ? 'bg-primary/15 font-semibold text-primary' : 'text-muted-foreground hover:bg-white/5'}`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </header>
+          <Card>
+            <CardContent>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 xl:grid-cols-7">
+                <InfoItem
+                  label="Status"
+                  value={
+                    <div className="flex flex-wrap gap-1">
+                      <ServiceStatusBadge status={service.status} />
+                      <span className="text-xs text-muted-foreground">
+                        {service.active ? 'Listado' : 'Não listado'}
+                      </span>
+                    </div>
+                  }
+                />
+                <InfoItem label="Região" value={location?.regionCode ?? '—'} />
+                <InfoItem
+                  label="Coordenadas"
+                  value={
+                    location?.latitude != null && location.longitude != null
+                      ? `${formatNumber(location.latitude, '', 2)}, ${formatNumber(location.longitude, '', 2)}`
+                      : '—'
+                  }
+                />
+                <InfoItem
+                  label="Visto por último"
+                  value={formatDateTime(service.lastSeenAt)}
+                />
+                <InfoItem
+                  label="CPU"
+                  value={formatNumber(metrics?.cpuPercent, '%')}
+                />
+                <InfoItem
+                  label="Memória"
+                  value={formatNumber(metrics?.memoryGb, 'GB', 2)}
+                />
+                <InfoItem
+                  label="Disco"
+                  value={formatNumber(metrics?.diskGb, 'GB', 2)}
+                />
+                <InfoItem
+                  label="Rede"
+                  value={formatNumber(metrics?.networkGb, 'GB', 2)}
+                />
+                <InfoItem
+                  label="Potência estimada"
+                  value={formatNumber(estimates?.powerWatts, 'W')}
+                />
+                <InfoItem
+                  label="Energia (última coleta)"
+                  value={formatNumber(
+                    estimates ? estimates.energyKwh * 1e6 : null,
+                    'mWh',
+                    2,
+                  )}
+                />
+                <InfoItem
+                  label="CO₂e (última coleta)"
+                  value={formatNumber(
+                    estimates ? estimates.co2eGrams * 1000 : null,
+                    'mg CO₂e',
+                    2,
+                  )}
+                />
+                <InfoItem
+                  label="Intensidade da região"
+                  value={formatNumber(
+                    location?.currentCarbonIntensityGco2ePerKwh ??
+                      estimates?.carbonIntensityGco2ePerKwh,
+                    'g CO₂e/kWh',
+                    0,
+                  )}
+                />
+                <InfoItem
+                  label="Energia no período"
+                  value={formatNumber(history?.summary.energyKwh, 'kWh', 3)}
+                />
+                <InfoItem
+                  label="CO₂e no período"
+                  value={formatNumber(history?.summary.co2eGrams, 'g CO₂e', 2)}
+                />
+              </dl>
+            </CardContent>
+          </Card>
+          <p className="text-xs text-muted-foreground">
+            Última coleta: {formatDateTime(collection?.collectedAt)} · Status
+            atualizado: {formatDateTime(service.statusUpdatedAt)}
+            {history &&
+              ` · ${history.summary.sampleCount} faixas simuladas no período`}
           </p>
-        </CardContent>
-      </Card>
-            <Card>
-        <CardHeader>
-          <CardTitle>Métricas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {service.metrics ? (
-            <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <InfoItem
-                label="CPU"
-                value={`${service.metrics.cpuPercent.toLocaleString('pt-BR')} %`}
-              />
-              <InfoItem
-                label="Memória"
-                value={`${service.metrics.memoryGb.toLocaleString('pt-BR')} GB`}
-              />
-              <InfoItem
-                label="Disco"
-                value={`${service.metrics.diskGb.toLocaleString('pt-BR')} GB`}
-              />
-              <InfoItem
-                label="Rede"
-                value={`${service.metrics.networkGb.toLocaleString('pt-BR')} GB`}
-              />
-            </dl>
-          ) : (
-            <p className="text-muted-foreground">
-              Nenhuma métrica disponível para este serviço.
+          {!collection && (
+            <p className="text-sm text-muted-foreground">
+              Este serviço ainda não possui coleta. O status atual é
+              independente das métricas.
             </p>
           )}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Localização</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            <InfoItem label="Cidade" value={service.location.city} />
-            <InfoItem label="Região" value={service.location.region} />
-            <InfoItem label="País" value={service.location.country} />
-            <InfoItem
-              label="Código da região"
-              value={service.location.regionCode}
-            />
-            <InfoItem
-              label="Coordenadas"
-              value={`${service.location.latitude.toFixed(4)}, ${service.location.longitude.toFixed(4)}`}
-            />
-          </dl>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Indicadores ambientais</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {service.environmental ? (
-            <dl className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              <InfoItem
-                label="Potência estimada"
-                value={`${service.environmental.powerWatts.toLocaleString('pt-BR')} W`}
-              />
-              <InfoItem
-                label="Energia estimada"
-                value={`${service.environmental.energyKwh.toLocaleString('pt-BR', { maximumFractionDigits: 5 })} kWh`}
-              />
-              <InfoItem
-                label="CO₂e estimado"
-                value={`${service.environmental.co2eGrams.toLocaleString('pt-BR')} g`}
-              />
-              <InfoItem
-                label="Intensidade de carbono"
-                value={`${service.environmental.carbonIntensity.toLocaleString('pt-BR')} gCO₂e/kWh`}
-              />
-              <InfoItem
-                label="Energia renovável"
-                value={`${service.environmental.renewableSharePercent.toLocaleString('pt-BR')} %`}
-              />
-            </dl>
-          ) : (
-            <p className="text-muted-foreground">
-              Indicadores ambientais indisponíveis: o serviço não possui
-              métricas para o cálculo.
+          {historyError && (
+            <p role="alert" className="text-destructive">
+              {historyError}
             </p>
           )}
-        </CardContent>
-      </Card>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {charts.map((chart) => (
+              <ChartCard
+                key={chart.key}
+                title={chart.title}
+                subtitle={periods[range]}
+              >
+                {!history ? (
+                  <p className="text-muted-foreground">
+                    {historyError
+                      ? 'Histórico indisponível.'
+                      : 'Carregando histórico...'}
+                  </p>
+                ) : (
+                  <TimeSeriesChart
+                    label={chart.title}
+                    color={chart.color}
+                    data={history.points.map((point) => ({
+                      time: point.timestamp,
+                      value: point[chart.key],
+                    }))}
+                    formatValue={(value) => formatNumber(value, chart.unit, 2)}
+                  />
+                )}
+              </ChartCard>
+            ))}
+          </div>
+        </>
+      )}
     </main>
   );
 }
