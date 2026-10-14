@@ -1,5 +1,5 @@
 FROM node:24-bookworm-slim
-WORKDIR /app
+WORKDIR /backend
 COPY package*.json ./
 RUN npm ci
 COPY . .
