@@ -1,11 +1,13 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import { findServiceById } from '@/mocks/services';
 import {
-  buildServiceHistory,
-  mockOverview,
+  fetchAnalytics,
+  fetchOverview,
+  poll,
+  type Analytics,
+  type Overview,
   type Range,
-} from '@/mocks/serviceHistory';
+} from '@/api/services';
 import { ChartCard } from '@/components/charts/ChartCard';
 import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
 import { ServiceStatusBadge } from '@/components/services/ServiceStatusBadge';
@@ -30,11 +32,85 @@ function InfoItem({ label, value }: { label: string; value: ReactNode }) {
 export function ServiceDetailPage() {
   const { id } = useParams();
   const [range, setRange] = useState<Range>('24h');
-  const mock = id ? findServiceById(id) : undefined;
-  const current = mock ? mockOverview(mock) : null;
-  const history = mock ? buildServiceHistory(mock, range) : null;
-  const error = mock ? null : 'Serviço não encontrado nos dados simulados.';
-  const historyError = null;
+  const [detailState, setDetailState] = useState<{
+    id: string;
+    data: Overview | null;
+    error: string | null;
+    updatedAt: string | null;
+  } | null>(null);
+  const [historyState, setHistoryState] = useState<{
+    id: string;
+    range: Range;
+    data: Analytics | null;
+    error: string | null;
+    updatedAt: string | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    return poll(
+      (signal) => fetchOverview(id, signal),
+      (data) =>
+        setDetailState({
+          id,
+          data,
+          error: null,
+          updatedAt: new Date().toISOString(),
+        }),
+      (error) =>
+        setDetailState((previous) => ({
+          id,
+          data: previous?.id === id ? previous.data : null,
+          error,
+          updatedAt: previous?.id === id ? previous.updatedAt : null,
+        })),
+    );
+  }, [id]);
+  useEffect(() => {
+    if (!id) return;
+    return poll(
+      (signal) => fetchAnalytics(id, range, signal),
+      (data) =>
+        setHistoryState({
+          id,
+          range,
+          data,
+          error: null,
+          updatedAt: new Date().toISOString(),
+        }),
+      (error) =>
+        setHistoryState((previous) => ({
+          id,
+          range,
+          data:
+            previous?.id === id && previous.range === range
+              ? previous.data
+              : null,
+          error,
+          updatedAt:
+            previous?.id === id && previous.range === range
+              ? previous.updatedAt
+              : null,
+        })),
+    );
+  }, [id, range]);
+  const detail = detailState?.id === id ? detailState : null;
+  const selectedHistory =
+    historyState && historyState.id === id && historyState.range === range
+      ? historyState
+      : null;
+  const current = detail?.data ?? null;
+  const history = selectedHistory?.data ?? null;
+  const error = detail?.error;
+  const historyError = selectedHistory?.error;
+  const confirmedAt =
+    detail?.updatedAt && selectedHistory?.updatedAt
+      ? new Date(
+          Math.min(
+            Date.parse(detail.updatedAt),
+            Date.parse(selectedHistory.updatedAt),
+          ),
+        ).toISOString()
+      : null;
   const service = current?.service;
   const collection = current?.latestCollection;
   const metrics = collection?.metrics;
@@ -61,13 +137,27 @@ export function ServiceDetailPage() {
       <Link to="/dashboard" className="text-sm text-primary hover:underline">
         ← Serviços
       </Link>
-      <p className="text-xs text-amber-300">
-        SIMULADO · curva fictícia integrada pela duração das faixas; amostra de
-        referência de 30 s.
+      <p className="text-xs text-muted-foreground">
+        {error || historyError
+          ? 'Última confirmação completa; dados anteriores'
+          : 'Tela atualizada'}
+        :{' '}
+        <time dateTime={confirmedAt ?? undefined}>
+          {confirmedAt
+            ? new Date(confirmedAt).toLocaleString('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                dateStyle: 'short',
+                timeStyle: 'medium',
+              })
+            : '—'}
+        </time>
       </p>
       {error && (
         <p role="alert" className="text-destructive">
-          {error}
+          {error}{' '}
+          {current
+            ? 'Exibindo detalhe anterior; atualização não confirmada.'
+            : ''}
         </p>
       )}
       {!service ? (
@@ -176,7 +266,7 @@ export function ServiceDetailPage() {
                 />
                 <InfoItem
                   label="Energia no período"
-                  value={formatNumber(history?.summary.energyKwh, 'kWh', 3)}
+                  value={formatNumber(history?.summary.energyKwh, 'kWh', 6)}
                 />
                 <InfoItem
                   label="CO₂e no período"
@@ -188,9 +278,24 @@ export function ServiceDetailPage() {
           <p className="text-xs text-muted-foreground">
             Última coleta: {formatDateTime(collection?.collectedAt)} · Status
             atualizado: {formatDateTime(service.statusUpdatedAt)}
-            {history &&
-              ` · ${history.summary.sampleCount} faixas simuladas no período`}
+            {history && ` · ${history.summary.sampleCount} coletas no período`}
           </p>
+          {history && (
+            <p className="text-xs text-muted-foreground">
+              Período consultado: {formatDateTime(history.period.from)} até{' '}
+              {formatDateTime(history.period.to)}. Totais das amostras
+              armazenadas; sem garantia de cobertura contínua.
+            </p>
+          )}
+          {collection &&
+            Date.parse(detail?.updatedAt ?? collection.collectedAt) -
+              Date.parse(collection.collectedAt) >
+              Math.max(collection.collectionIntervalSeconds * 2000, 60000) && (
+              <p className="text-sm text-amber-300">
+                A última coleta é antiga. O histórico está ancorado nessa
+                coleta; o status informado pelo backend é independente dela.
+              </p>
+            )}
           {!collection && (
             <p className="text-sm text-muted-foreground">
               Este serviço ainda não possui coleta. O status atual é
@@ -199,7 +304,10 @@ export function ServiceDetailPage() {
           )}
           {historyError && (
             <p role="alert" className="text-destructive">
-              {historyError}
+              {historyError}{' '}
+              {history
+                ? 'Exibindo histórico anterior; atualização não confirmada.'
+                : ''}
             </p>
           )}
           <div className="grid gap-4 lg:grid-cols-2">

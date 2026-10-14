@@ -24,7 +24,7 @@ fornecê-las ao restante da aplicação.
 ## 2. API REST do GreenER
 
 A implementação atual oferece listagem, detalhe de serviço, histórico de coletas e
-estado do monitoramento. O frontend ainda usa dados simulados; a integração real permanece pendente. As demais operações abaixo são planejadas.
+estado do monitoramento. A listagem, o detalhe, o histórico e o monitoramento no frontend usam APIs reais, com revalidação a cada 5 segundos após o término da consulta anterior. As demais operações abaixo são planejadas.
 
 ### 2.1. Operações implementadas
 
@@ -206,8 +206,14 @@ antes de executar os controllers. Dados inválidos de requisição resultam em
 ainda não está implementado. Falhas de negócio e de integração são retornadas como erros explícitos,
 sem respostas com aparência de sucesso ou métricas substituídas por zero.
 
-O frontend deverá apresentar carregamento, sucesso, ausência de dados,
-desatualização e falha ao integrar estas rotas. Os horários reais retornados
+O frontend apresenta carregamento, ausência de dados e erros em português.
+Não recorre a mocks quando a API falha. Dados já carregados podem permanecer
+visíveis com aviso explícito de desatualização. "Tela atualizada" reflete as
+consultas bem-sucedidas da página (lista, ou detalhe e histórico do período),
+independentemente do monitoramento. O contador de coleta usa `serverTime` e
+`nextCollectionAt` localmente a cada segundo; não consulta a API a cada segundo.
+Requisições têm timeout de 10 segundos; requests e timers são cancelados ao mudar ID, filtro, período ou sair da tela.
+O intervalo do job permanece inalterado. Os horários reais retornados
 pelo backend não devem ser substituídos pelo horário da requisição.
 
 ## 3. Greener Metrics Aggregator API

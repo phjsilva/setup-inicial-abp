@@ -11,7 +11,7 @@ import { useServices } from '@/hooks/useServices';
 export function DashboardPage() {
   const [regionCode, setRegionCode] = useState('');
   const [active, setActive] = useState('all');
-  const { services, isLoading, error } = useServices(
+  const { services, isLoading, error, updatedAt } = useServices(
     regionCode || undefined,
     active === 'all' ? undefined : active === 'true',
   );
@@ -28,8 +28,7 @@ export function DashboardPage() {
       <header>
         <h1 className="text-3xl font-semibold">Serviços</h1>
         <p className="text-muted-foreground">
-          SIMULADO · Estado, localização, métricas e impacto estimado de cada
-          serviço.
+          Estado, localização, métricas e impacto estimado de cada serviço.
         </p>
       </header>
       <div className="flex flex-wrap gap-4">
@@ -59,9 +58,28 @@ export function DashboardPage() {
       {isLoading && (
         <p className="text-muted-foreground">Carregando serviços...</p>
       )}
-      {error && <p className="text-destructive">{error}</p>}
+      {error && (
+        <p role="alert" className="text-destructive">
+          {error}{' '}
+          {updatedAt
+            ? 'Exibindo dados anteriores; atualização não confirmada.'
+            : 'A lista ainda não foi carregada.'}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        {error ? 'Última confirmação da lista' : 'Tela atualizada'}:{' '}
+        <time dateTime={updatedAt ?? undefined}>
+          {updatedAt
+            ? new Date(updatedAt).toLocaleString('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                dateStyle: 'short',
+                timeStyle: 'medium',
+              })
+            : '—'}
+        </time>
+      </p>
 
-      {!isLoading && !error && (
+      {!isLoading && updatedAt && (
         <>
           <ServiceFilters
             filters={filters}

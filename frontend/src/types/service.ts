@@ -39,6 +39,7 @@ export interface ServiceDetail {
 }
 
 export interface ServiceSummary {
+  collectedAt?: string | null;
   active?: boolean;
   id: string;
   name: string;
