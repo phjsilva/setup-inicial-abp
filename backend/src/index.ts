@@ -1,0 +1,28 @@
+import { Router } from 'express';
+import { servicesRouter } from './modules/services/services.routes.js';
+import analyticsRouter from './modules/analytics/analytics.routes.js';
+import monitoringRouter from './modules/monitoring/monitoring.routes.js';
+import { regionsRouter } from './modules/regions/regions.routes.js';
+import { collectionsRouter } from './modules/collections/collections.routes.js';
+import { comparisonsRouter } from './modules/comparisons/comparisons.routes.js';
+import { rankingsRouter } from './modules/rankings/rankings.routes.js';
+import { accountsRouter } from './modules/accounts/accounts.routes.js';
+import { dashboardsRouter } from './modules/dashboards/dashboards.routes.js';
+import { projectRouter } from './modules/project/project.routes.js';
+import { reportsRouter } from './modules/reports/reports.routes.js';
+
+const router = Router();
+router.use('/services', servicesRouter);
+router.use('/services', analyticsRouter);
+router.use('/service', servicesRouter);
+router.use('/service', analyticsRouter);
+router.use('/regions', regionsRouter);
+router.use('/monitoring', monitoringRouter);
+router.use('/collections', collectionsRouter);
+router.use('/comparisons', comparisonsRouter);
+router.use('/rankings', rankingsRouter);
+router.use(accountsRouter);
+router.use('/dashboards', dashboardsRouter);
+router.use('/project', projectRouter);
+router.use('/reports', reportsRouter);
+export default router;

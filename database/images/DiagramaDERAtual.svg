@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1235" viewBox="0 0 1480 1235" role="img" aria-labelledby="title desc">
+  <title id="title">Diagrama entidade-relacionamento do GreenER</title>
+  <desc id="desc">Sete tabelas do PostgreSQL com colunas, tipos, chaves e cardinalidades. Cinco tabelas compõem o fluxo de coleta. Usuário e configuração ficam em uma área separada.</desc>
+  <style>
+    text { font-family: 'Segoe UI', Arial, sans-serif; fill: #182e2d; }
+    .title { font-size: 40px; font-weight: 700; }
+    .subtitle { font-size: 18px; fill: #476662; }
+    .section { font-size: 15px; font-weight: 700; letter-spacing: 2px; fill: #2d6760; }
+    .table { font: 700 20px Consolas, monospace; fill: white; }
+    .field { font: 15px Consolas, monospace; }
+    .type { font: 13px Consolas, monospace; fill: #43615e; text-anchor: end; }
+    .tag { font: 700 12px Consolas, monospace; text-anchor: middle; fill: #176252; }
+    .optional { fill: #5d4b89; }
+    .edge { fill: none; stroke: #32746c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .dashed { stroke: #6a5599; stroke-dasharray: 5 4; }
+    .cardinality { font: 700 14px Consolas, monospace; fill: #215e57; paint-order: stroke; stroke: #f4f9f8; stroke-width: 6px; }
+    .cardinality.optional { fill: #5d4b89; }
+    .note { font-size: 15px; fill: #476662; }
+  </style>
+  <rect width="1480" height="1235" rx="22" fill="#f4f9f8"/>
+  <text class="title" x="50" y="61">GreenER · Diagrama do banco de dados</text>
+  <text class="subtitle" x="52" y="94">PostgreSQL · tabelas, chaves e cardinalidades</text>
+  <text class="section" x="50" y="137">MONITORAMENTO E COLETA</text>
+  <path d="M335 131H1430" stroke="#bed5d1"/>
+  <text class="section" x="50" y="970">USUÁRIOS E CONFIGURAÇÃO</text>
+  <path d="M329 964H1430" stroke="#bed5d1"/>
+
+  <path class="edge" d="M250 432V506"/>
+  <text class="cardinality" x="261" y="454" text-anchor="start">1</text>
+  <text class="cardinality" x="261" y="493" text-anchor="start">0..N</text>
+  <path class="edge" d="M740 369V460"/>
+  <text class="cardinality" x="751" y="391" text-anchor="start">1</text>
+  <text class="cardinality" x="751" y="446" text-anchor="start">0..N</text>
+  <path class="edge" d="M450 569H540"/>
+  <text class="cardinality" x="460" y="558" text-anchor="start">1</text>
+  <text class="cardinality" x="530" y="558" text-anchor="end">0..N</text>
+  <path class="edge dashed" d="M940 569H1030"/>
+  <text class="cardinality optional" x="948" y="558" text-anchor="start">0..1</text>
+  <text class="cardinality optional" x="1022" y="558" text-anchor="end">0..N</text>
+  <path class="edge" d="M450 722H491V916H1230V669"/>
+  <text class="cardinality" x="460" y="711" text-anchor="start">1</text>
+  <text class="cardinality" x="1241" y="692" text-anchor="start">0..N</text>
+  <path class="edge dashed" d="M450 1074H540"/>
+  <text class="cardinality optional" x="458" y="1062" text-anchor="start">0..1</text>
+  <text class="cardinality optional" x="532" y="1062" text-anchor="end">0..1</text>
+  <g id="regiao">
+    <rect x="50" y="160" width="400" height="272" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M62 160H438Q450 160 450 172V205H50V172Q50 160 62 160Z" fill="#235d58"/>
+    <text class="table" x="65" y="189">regiao</text>
+    <rect x="57" y="209" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="224">id</text>
+    <text class="type" x="362" y="224">bigint</text>
+    <text class="tag" x="404" y="224">PK</text>
+    <text class="field" x="65" y="245">codigo</text>
+    <text class="type" x="362" y="245">text</text>
+    <text class="tag" x="404" y="245">UK</text>
+    <rect x="57" y="251" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="266">pais</text>
+    <text class="type" x="362" y="266">text</text>
+    <text class="field" x="65" y="287">regiao</text>
+    <text class="type" x="362" y="287">text</text>
+    <rect x="57" y="293" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="308">cidade</text>
+    <text class="type" x="362" y="308">text</text>
+    <text class="tag optional" x="404" y="308">NULL</text>
+    <text class="field" x="65" y="329">latitude</text>
+    <text class="type" x="362" y="329">double precision</text>
+    <text class="tag optional" x="404" y="329">NULL</text>
+    <rect x="57" y="335" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="350">longitude</text>
+    <text class="type" x="362" y="350">double precision</text>
+    <text class="tag optional" x="404" y="350">NULL</text>
+    <text class="field" x="65" y="371">carbon_intensity</text>
+    <text class="type" x="362" y="371">numeric</text>
+    <rect x="57" y="377" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="392">renewable_share_percent</text>
+    <text class="type" x="362" y="392">numeric</text>
+    <text class="field" x="65" y="413">atualizado_em</text>
+    <text class="type" x="362" y="413">timestamptz</text>
+  </g>
+  <g id="servico">
+    <rect x="50" y="506" width="400" height="251" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M62 506H438Q450 506 450 518V551H50V518Q50 506 62 506Z" fill="#235d58"/>
+    <text class="table" x="65" y="535">servico</text>
+    <rect x="57" y="555" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="570">id</text>
+    <text class="type" x="362" y="570">bigint</text>
+    <text class="tag" x="404" y="570">PK</text>
+    <text class="field" x="65" y="591">external_id</text>
+    <text class="type" x="362" y="591">text</text>
+    <text class="tag" x="404" y="591">UK</text>
+    <rect x="57" y="597" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="612">nome</text>
+    <text class="type" x="362" y="612">text</text>
+    <text class="field" x="65" y="633">metrics_path</text>
+    <text class="type" x="362" y="633">text</text>
+    <rect x="57" y="639" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="654">status</text>
+    <text class="type" x="362" y="654">text</text>
+    <text class="field" x="65" y="675">status_atualizado_em</text>
+    <text class="type" x="362" y="675">timestamptz</text>
+    <rect x="57" y="681" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="696">ativo</text>
+    <text class="type" x="362" y="696">boolean</text>
+    <text class="field" x="65" y="717">ultima_vez_visto_em</text>
+    <text class="type" x="362" y="717">timestamptz</text>
+    <rect x="57" y="723" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="738">regiao_id</text>
+    <text class="type" x="362" y="738">bigint</text>
+    <text class="tag" x="404" y="738">FK</text>
+  </g>
+  <g id="parametro_estimativa">
+    <rect x="540" y="160" width="400" height="209" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M552 160H928Q940 160 940 172V205H540V172Q540 160 552 160Z" fill="#235d58"/>
+    <text class="table" x="555" y="189">parametro_estimativa</text>
+    <rect x="547" y="209" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="224">id</text>
+    <text class="type" x="852" y="224">bigint</text>
+    <text class="tag" x="894" y="224">PK</text>
+    <text class="field" x="555" y="245">cpu_max_watts</text>
+    <text class="type" x="852" y="245">numeric(10,4)</text>
+    <rect x="547" y="251" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="266">ram_watts_per_gb</text>
+    <text class="type" x="852" y="266">numeric(10,4)</text>
+    <text class="field" x="555" y="287">disk_watts_per_gb</text>
+    <text class="type" x="852" y="287">numeric(10,4)</text>
+    <rect x="547" y="293" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="308">network_watts_per_gb</text>
+    <text class="type" x="852" y="308">numeric(10,4)</text>
+    <text class="field" x="555" y="329">ativo</text>
+    <text class="type" x="852" y="329">boolean</text>
+    <rect x="547" y="335" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="350">criado_em</text>
+    <text class="type" x="852" y="350">timestamptz</text>
+  </g>
+  <g id="coleta">
+    <rect x="540" y="460" width="400" height="419" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M552 460H928Q940 460 940 472V505H540V472Q540 460 552 460Z" fill="#145144"/>
+    <text class="table" x="555" y="489">coleta</text>
+    <rect x="547" y="509" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="524">id</text>
+    <text class="type" x="852" y="524">uuid</text>
+    <text class="tag" x="894" y="524">PK</text>
+    <text class="field" x="555" y="545">servico_id</text>
+    <text class="type" x="852" y="545">bigint</text>
+    <text class="tag" x="894" y="545">FK</text>
+    <rect x="547" y="551" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="566">parametro_estimativa_id</text>
+    <text class="type" x="852" y="566">bigint</text>
+    <text class="tag" x="894" y="566">FK</text>
+    <text class="field" x="555" y="587">coletado_em</text>
+    <text class="type" x="852" y="587">timestamptz</text>
+    <rect x="547" y="593" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="608">intervalo_metrica_segundos</text>
+    <text class="type" x="852" y="608">integer</text>
+    <text class="field" x="555" y="629">cpu_percent</text>
+    <text class="type" x="852" y="629">double precision</text>
+    <rect x="547" y="635" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="650">memory_gb</text>
+    <text class="type" x="852" y="650">double precision</text>
+    <text class="field" x="555" y="671">disk_gb</text>
+    <text class="type" x="852" y="671">double precision</text>
+    <rect x="547" y="677" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="692">network_gb</text>
+    <text class="type" x="852" y="692">double precision</text>
+    <text class="field" x="555" y="713">cpu_watts</text>
+    <text class="type" x="852" y="713">numeric(14,6)</text>
+    <rect x="547" y="719" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="734">memory_watts</text>
+    <text class="type" x="852" y="734">numeric(14,6)</text>
+    <text class="field" x="555" y="755">disk_watts</text>
+    <text class="type" x="852" y="755">numeric(14,6)</text>
+    <rect x="547" y="761" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="776">network_watts</text>
+    <text class="type" x="852" y="776">numeric(14,6)</text>
+    <text class="field" x="555" y="797">potencia_estimada_w</text>
+    <text class="type" x="852" y="797">numeric(14,6)</text>
+    <rect x="547" y="803" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="818">energia_estimada_kwh</text>
+    <text class="type" x="852" y="818">numeric(20,10)</text>
+    <text class="field" x="555" y="839">carbon_intensity</text>
+    <text class="type" x="852" y="839">numeric(12,4)</text>
+    <rect x="547" y="845" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="860">co2e_estimado_g</text>
+    <text class="type" x="852" y="860">numeric(20,10)</text>
+  </g>
+  <g id="status_coleta">
+    <rect x="1030" y="460" width="400" height="209" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M1042 460H1418Q1430 460 1430 472V505H1030V472Q1030 460 1042 460Z" fill="#365475"/>
+    <text class="table" x="1045" y="489">status_coleta</text>
+    <rect x="1037" y="509" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="1045" y="524">id</text>
+    <text class="type" x="1342" y="524">uuid</text>
+    <text class="tag" x="1384" y="524">PK</text>
+    <text class="field" x="1045" y="545">servico_id</text>
+    <text class="type" x="1342" y="545">bigint</text>
+    <text class="tag" x="1384" y="545">FK</text>
+    <rect x="1037" y="551" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="1045" y="566">coleta_id</text>
+    <text class="type" x="1342" y="566">uuid</text>
+    <text class="tag optional" x="1384" y="566">FK · NULL</text>
+    <text class="field" x="1045" y="587">observado_em</text>
+    <text class="type" x="1342" y="587">timestamptz</text>
+    <rect x="1037" y="593" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="1045" y="608">descricao</text>
+    <text class="type" x="1342" y="608">text</text>
+    <text class="field" x="1045" y="629">http_status</text>
+    <text class="type" x="1342" y="629">smallint</text>
+    <text class="tag optional" x="1384" y="629">NULL</text>
+    <rect x="1037" y="635" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="1045" y="650">tipo</text>
+    <text class="type" x="1342" y="650">text</text>
+  </g>
+  <g id="usuario">
+    <rect x="50" y="997" width="400" height="167" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M62 997H438Q450 997 450 1009V1042H50V1009Q50 997 62 997Z" fill="#505580"/>
+    <text class="table" x="65" y="1026">usuario</text>
+    <rect x="57" y="1046" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="1061">id</text>
+    <text class="type" x="362" y="1061">bigint</text>
+    <text class="tag" x="404" y="1061">PK</text>
+    <text class="field" x="65" y="1082">email</text>
+    <text class="type" x="362" y="1082">text</text>
+    <text class="tag" x="404" y="1082">UK</text>
+    <rect x="57" y="1088" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="1103">senha_hash</text>
+    <text class="type" x="362" y="1103">text</text>
+    <text class="field" x="65" y="1124">papel</text>
+    <text class="type" x="362" y="1124">text</text>
+    <rect x="57" y="1130" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="65" y="1145">criado_em</text>
+    <text class="type" x="362" y="1145">timestamptz</text>
+  </g>
+  <g id="configuracao_sistema">
+    <rect x="540" y="997" width="400" height="146" rx="12" fill="white" stroke="#c6dad7"/>
+    <path d="M552 997H928Q940 997 940 1009V1042H540V1009Q540 997 552 997Z" fill="#505580"/>
+    <text class="table" x="555" y="1026">configuracao_sistema</text>
+    <rect x="547" y="1046" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="1061">id</text>
+    <text class="type" x="852" y="1061">boolean</text>
+    <text class="tag" x="894" y="1061">PK</text>
+    <text class="field" x="555" y="1082">intervalo_coleta_segundos</text>
+    <text class="type" x="852" y="1082">integer</text>
+    <rect x="547" y="1088" width="386" height="21" rx="4" fill="#f0f6f5"/>
+    <text class="field" x="555" y="1103">atualizado_por</text>
+    <text class="type" x="852" y="1103">bigint</text>
+    <text class="tag optional" x="894" y="1103">FK · NULL</text>
+    <text class="field" x="555" y="1124">atualizado_em</text>
+    <text class="type" x="852" y="1124">timestamptz</text>
+  </g>
+  <text class="section" x="1030" y="1025">LEGENDA</text>
+  <text class="note" x="1030" y="1055">PK · primária   FK · estrangeira   UK · única</text>
+  <text class="note" x="1030" y="1081">NULL · coluna opcional</text>
+  <text class="note" x="1030" y="1107">1 · exatamente um   0..1 · até um</text>
+  <text class="note" x="1030" y="1133">0..N · zero ou muitos</text>
+  <path class="edge dashed" d="M1030 1157H1063"/>
+  <text class="note" x="1074" y="1163">Vínculo com chave estrangeira opcional</text>
+</svg>
